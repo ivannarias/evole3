@@ -26,7 +26,7 @@ def pretty_print(message):
         # TODO HECHO: Process PRIVMSG message
 	prefix, _, resta = message.partition(" PRIVMSG ")
         sender = prefix[1:]  # Només eliminem els  ":"
-        msg = resta.split(" :", 1)[1] if " :" in rest else ""
+        msg = resta.split(" :", 1)[1] if " :" in resta else ""
         print(f"{bold}({sender}): {reset_font}{msg}")
 
     elif "PART" in message:
@@ -38,9 +38,9 @@ def pretty_print(message):
 
     elif "JOIN" in message:
         # TODO HECHO: Process JOIN mesage
-        prefix, _, rest = message.partition(" JOIN ")
+        prefix, _, resta = message.partition(" JOIN ")
         sender = prefix[1:]
-        channel = rest.strip()
+        channel = resta.strip()
         print(f"{bold_red}{sender} joined the channel ({channel}){reset_font}")
     else:
         print (f"{bold}{message}{reset_font}")
@@ -82,7 +82,7 @@ def main():
                 command = parse_command(user_input)
                 if command:
                     # TODO HECHO: Add socket call
-                    s.sendall((command + "\r\n"))
+                    s.sendall((command + "\r\n").encode())
 		    if command.startswith("QUIT"):
                         break
                     if command.startswith("PRIVMSG"):

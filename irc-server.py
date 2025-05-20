@@ -22,7 +22,7 @@ def command_NICK(conn, message):
     if len(parts) < 2 or not parts[1].strip():
         return ":server 431 * :No nickname given\r\n"
 
-   proposed_nick = parts[1]  # Agafem el nickname proposat
+    proposed_nick = parts[1]  # Agafem el nickname proposat
 
     # TODO HECHO: Check if nick in use
     if proposed_nick in users.values():  # Comprovem que no hi hagi usuaris amb aquest nick
