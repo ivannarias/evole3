@@ -75,7 +75,7 @@ def main():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         # TODO HECHO: Add socket call
         s.connect((host,port))
-	threading.Thread(target=receive_messages, args=(s,), daemon=True).start()
+        threading.Thread(target=receive_messages, args=(s,), daemon=True).start()
         try:
             while True:
                 user_input = input()
@@ -83,7 +83,7 @@ def main():
                 if command:
                     # TODO HECHO: Add socket call
                     s.sendall((command + "\r\n").encode())
-		    if command.startswith("QUIT"):
+                    if command.startswith("QUIT"):
                         break
                     if command.startswith("PRIVMSG"):
                        print(f"{start_line}{bold_blue}(You):{reset_font} {user_input}")
