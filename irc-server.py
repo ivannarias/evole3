@@ -22,24 +22,35 @@ def command_NICK(conn, message):
     if len(parts) < 2 or not parts[1].strip():
         return ":server 431 * :No nickname given\r\n"
 
-    # TODO: Check if nick in use
-    return f":server 433 * {proposed_nick} :Nickname is already in use\r\n"
-    # TODO: Check if nickname contains invalid characters
-    return f":server 432 * {proposed_nick} :Erroneous nickname\r\n"
-    #TODO; save nickname in corresponding array and send confirmation
+   proposed_nick = parts[1]  # Agafem el nickname proposat
+
+    # TODO HECHO: Check if nick in use
+    if proposed_nick in users.values():  # Comprovem que no hi hagi usuaris amb aquest nick
+	return f":server 433 * {proposed_nick} :Nickname is already in use\r\n"
+
+    # TODO HECHO: Check if nickname contains invalid characters
+    if not proposed_nick.isalnum():  # Comprovem que no tingui caràcters invàlids
+	return f":server 432 * {proposed_nick} :Erroneous nickname\r\n"
+
+    #TODO HECHO; save nickname in corresponding array and send confirmation
+    users[conn] = proposed_nick
     return f":server 001 {proposed_nick} :Welcome to the server\r\n"
 
 def command_JOIN(conn, message):
     if conn not in users:
         return ":server 451 * :You have not registered\r\n"
 
-    nickname="" #TODO Retrieve current user nickname
-    #TODO: Wrong channel provided
-    return f":server 403 {nickname} :No such channel\r\n"
+    nickname = users[conn] #TODO HECHO Retrieve current user nickname
+    parts = message.split() #  Separem el missatge
+
+    #TODO HECHO: Wrong channel provided
+    if len(parts) < 2 or not parts[1].startswith("#"):  # És invalid si no comença per "#" o si no té 1 o menys parts
+	return f":server 403 {nickname} :No such channel\r\n"
 
     if conn not in channel_members:
-        # TODO: Add user to channel
+        # TODO HECHO: Add user to channel
         # Notify all other users that someone joined
+	channel_members.add(conn)  # Afegim el membre als membres del canal
         broadcast(f":{nickname} JOIN :#{CHANNEL}\r\n", exclude=conn)
     # Send confirmation to the user
     return f":server 332 {nickname} #{CHANNEL} :Welcome to #{CHANNEL}\r\n"
@@ -48,22 +59,27 @@ def command_PART(conn, message):
     if conn not in users:
         return ":server 451 * :You have not registered\r\n"
 
-    nickname="" #TODO Retrieve current user nickname
+    nickname = users[conn]  #TODO HECHO: Retrieve current user nickname
     if conn in channel_members:
-        # TODO remove user from channel
+        # TODO HECHO remove user from channel
         # Notifiy all other users that this user left.
-        broadcast(f":{nickname} PART #{CHANNEL}\r\n", exclude=conn)
+        channel_members.remove(conn)
+	broadcast(f":{nickname} PART #{CHANNEL}\r\n", exclude=conn)
     # Confirm to current user that leaving was accepted
     return f":{nickname} PART #{CHANNEL}\r\n"
 
 def command_QUIT(conn, message):
 
-    nickname="" #TODO retrieve current nickname
+    nickname = nickname = users.get(conn, "*")  #TODO HECHO retrieve current nickname
     if conn in channel_members:
-        #TODO: Remove user from cjhannel
+        #TODO HECHO: Remove user from channel
+	channel_members.remove(conn)
         broadcast(f":{nickname} QUIT :Client disconnected\r\n", exclude=conn)
-    #TODO remove user from list of users.
+    #TODO HECHO: remove user from list of users.
     # Send confirmation to user
+    if conn in users:
+        del users[conn]
+
     return f":server ERROR :Closing Link: {nickname}\r\n"
 
 def command_PRIVMSG(conn, message):
@@ -74,15 +90,16 @@ def command_PRIVMSG(conn, message):
     if len(parts) < 3 or not parts[2].startswith(":"):
         return ":server 412 * :No text to send\r\n"
 
-    target ="" #TODO
-    msg = "" #TODO
+    target = parts[1]  #TODO
+    msg = parts[2][1:]  #TODO
     nickname = users[conn]
 
     if target == f"#{CHANNEL}":
         if conn not in channel_members:
             return f":server 442 {nickname} #{CHANNEL} :You're not on that channel\r\n"
-        # TODO: Send MSG to everyone on the channel
-        return ""  # Message broadcasted no need to for single reply to client
+        # TODO HECHO: Send MSG to everyone on the channel
+        broadcast(f":{nickname} PRIVMSG #{CHANNEL} :{msg}\r\n", exclude=conn)
+	return ""  # Message broadcasted no need to for single reply to client
     else:
         # Reject anything that's not the main channel
         return f":server 401 {nickname} {target} :No such nick/channel\r\n"
@@ -92,7 +109,7 @@ def handle_client(conn, addr):
     print (f"New client connects to server: {addr}")
     try:
         while True:
-            data = bytes() # TODO: Receive data from socket
+            data = conn.recv(1024) # TODO HECHO: Receive data from socket
             if not data:
                 break
 
@@ -117,12 +134,13 @@ def handle_client(conn, addr):
 
 def main():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        # TODO: Add required socket calls for server
+        # TODO HECHO: Add required socket calls for server
+	s.bind((HOST, PORT))  # Asociem el socket a la IP i el port
+        s.listen()  # Posem el socket a escoltar al host / port on ens hem associat
         print(f"IRC Server listening on {HOST}:{PORT}")
         while True:
-            conn=None
-            addr=None
-            # TODO: Add required socket calls for server
+	    conn, addr = s.accept()  # Acceptem totes aquelles connexions
+            # TODO HECHO: Add required socket calls for server
             threading.Thread(target=handle_client, args=(conn, addr), daemon=True).start()
 
 if __name__ == "__main__":

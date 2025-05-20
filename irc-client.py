@@ -23,19 +23,24 @@ def receive_messages(sock):
 
 def pretty_print(message):
     if "PRIVMSG" in message:
-        # TODO: Process PRIVMSG message
-        sender = ""
-        msg = ""
+        # TODO HECHO: Process PRIVMSG message
+	prefix, _, resta = message.partition(" PRIVMSG ")
+        sender = prefix[1:]  # Només eliminem els  ":"
+        msg = resta.split(" :", 1)[1] if " :" in rest else ""
         print(f"{bold}({sender}): {reset_font}{msg}")
+
     elif "PART" in message:
-        # TODO: Process PART mesage
-        sender = ""
-        channel = ""
+        # TODO HECHO: Process PART mesage
+        prefix, _, resta = message.partition(" PART ")
+        sender = prefix[1:]
+        channel = resta.strip()
         print(f"{bold_red}{sender} left the channel ({channel}){reset_font}")
+
     elif "JOIN" in message:
-        # TODO: Process JOIN mesage
-        sender = ""
-        channel = ""
+        # TODO HECHO: Process JOIN mesage
+        prefix, _, rest = message.partition(" JOIN ")
+        sender = prefix[1:]
+        channel = rest.strip()
         print(f"{bold_red}{sender} joined the channel ({channel}){reset_font}")
     else:
         print (f"{bold}{message}{reset_font}")
@@ -68,15 +73,17 @@ def main():
     port = args.port
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        # TODO: Add socket call
-        threading.Thread(target=receive_messages, args=(s,), daemon=True).start()
+        # TODO HECHO: Add socket call
+        s.connect((host,port))
+	threading.Thread(target=receive_messages, args=(s,), daemon=True).start()
         try:
             while True:
                 user_input = input()
                 command = parse_command(user_input)
                 if command:
-                    # TODO: Add socket call
-                    if command.startswith("QUIT"):
+                    # TODO HECHO: Add socket call
+                    s.sendall((command + "\r\n"))
+		    if command.startswith("QUIT"):
                         break
                     if command.startswith("PRIVMSG"):
                        print(f"{start_line}{bold_blue}(You):{reset_font} {user_input}")
