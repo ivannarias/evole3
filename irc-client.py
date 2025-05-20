@@ -14,9 +14,9 @@ start_line = "\033[F\033[K"
 def receive_messages(sock):
     while True:
         try:
-            data = sock.recv(1024)  # TODO HECHO: Receive data from socket
+	    data = sock.recv(1024)  # TODO HECHO: Receive data from socket
 	    if not data:
-                break
+               break
             pretty_print(data.decode())
         except:
             break

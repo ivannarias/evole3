@@ -70,7 +70,7 @@ def command_PART(conn, message):
 
 def command_QUIT(conn, message):
 
-    nickname = nickname = users.get(conn, "*")  #TODO HECHO retrieve current nickname
+    nickname = users.get(conn, "*")  #TODO HECHO retrieve current nickname
     if conn in channel_members:
         #TODO HECHO: Remove user from channel
 	channel_members.remove(conn)
@@ -98,7 +98,7 @@ def command_PRIVMSG(conn, message):
         if conn not in channel_members:
             return f":server 442 {nickname} #{CHANNEL} :You're not on that channel\r\n"
         # TODO HECHO: Send MSG to everyone on the channel
-        broadcast(f":{nickname} PRIVMSG #{CHANNEL} :{msg}\r\n", exclude=conn)
+	broadcast(f":{nickname} PRIVMSG #{CHANNEL} :{msg}\r\n", exclude=conn)
 	return ""  # Message broadcasted no need to for single reply to client
     else:
         # Reject anything that's not the main channel
